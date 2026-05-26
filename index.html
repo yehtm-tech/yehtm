@@ -2,35 +2,1441 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <title>2026 台北行</title>
-  
-  <!-- PWA 設定 -->
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="台北行">
-  
-  <!-- 圖示 (這裡使用一個通用的旅行圖示，你可以之後換掉) -->
-  <link rel="apple-touch-icon" href="https://img.icons8.com/color/192/taiwan-map.png">
-  <link rel="icon" type="image/png" href="https://img.icons8.com/color/192/taiwan-map.png">
-  
-  <!-- 註冊 Service Worker -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>4-1 植物的生殖 - Puti-AI 互動簡報</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Tailwind Config for Custom Themes -->
   <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js');
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Noto Sans TC', 'sans-serif'],
+          },
+        },
+      },
     }
   </script>
+  <!-- Google Fonts & FontAwesome -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <style>
-    body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; }
-    iframe { width: 100%; height: 100%; border: none; }
+    body {
+      font-family: 'Noto Sans TC', sans-serif;
+      overflow: hidden;
+    }
+    .slide-enter {
+      opacity: 0;
+      transform: scale(0.95) translateY(10px);
+    }
+    .slide-active {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+      transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .slide-exit {
+      opacity: 0;
+      transform: scale(1.05) translateY(-10px);
+      transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    /* Theme color variables */
+    .theme-forest {
+      --primary: #10b981; --primary-hover: #059669; --bg-gradient-from: #064e3b; --bg-gradient-to: #022c22;
+      --card-bg: rgba(6, 78, 59, 0.4); --text-main: #e6f4ea; --accent: #fbbf24;
+    }
+    .theme-ocean {
+      --primary: #3b82f6; --primary-hover: #2563eb; --bg-gradient-from: #1e3a8a; --bg-gradient-to: #0f172a;
+      --card-bg: rgba(30, 58, 138, 0.4); --text-main: #f0f7ff; --accent: #f59e0b;
+    }
+    .theme-sakura {
+      --primary: #ec4899; --primary-hover: #db2777; --bg-gradient-from: #500724; --bg-gradient-to: #2d0010;
+      --card-bg: rgba(80, 7, 36, 0.4); --text-main: #fff0f6; --accent: #facc15;
+    }
+    .theme-dark {
+      --primary: #22c55e; --primary-hover: #16a34a; --bg-gradient-from: #0f172a; --bg-gradient-to: #020617;
+      --card-bg: rgba(30, 41, 59, 0.5); --text-main: #f8fafc; --accent: #00f5ff;
+    }
+    .theme-autumn {
+      --primary: #f97316; --primary-hover: #ea580c; --bg-gradient-from: #451a03; --bg-gradient-to: #1c0a00;
+      --card-bg: rgba(69, 26, 3, 0.4); --text-main: #fff7ed; --accent: #facc15;
+    }
+    
+    .theme-transition {
+      transition: background 0.8s ease, color 0.5s ease, border-color 0.5s ease;
+    }
+    
+    /* 3D Card Flip */
+    .flip-card {
+      perspective: 1000px;
+    }
+    .flip-card-inner {
+      transition: transform 0.6s;
+      transform-style: preserve-3d;
+    }
+    .flip-card.flipped .flip-card-inner {
+      transform: rotateY(180deg);
+    }
+    .flip-card-front, .flip-card-back {
+      backface-visibility: hidden;
+    }
+    .flip-card-back {
+      transform: rotateY(180deg);
+    }
   </style>
 </head>
-<body>
-  <!-- 請將下方 src 的網址換成你的 Apps Script 網址 (記得結尾是 /exec) -->
-  <iframe src="https://script.google.com/a/macros/smhs.hlc.edu.tw/s/AKfycbxmo2KsU12_uKyiOechQRwIqWdfhdPeAt-3x0XdAGouH1dt88fRA_k7D0Tli9vY2Bh2/exec"></iframe>
+<body class="theme-forest theme-transition text-white h-screen flex flex-col justify-between select-none bg-gradient-to-br from-[var(--bg-gradient-from)] to-[var(--bg-gradient-to)]">
+
+  <!-- 背景粒子畫布 -->
+  <canvas id="bg-particles" class="absolute inset-0 pointer-events-none z-0 opacity-40"></canvas>
+
+  <!-- 頂部導覽列 -->
+  <header class="w-full px-6 py-4 flex justify-between items-center z-10 backdrop-blur-sm border-b border-white/10">
+    <div class="flex items-center space-x-3">
+      <div class="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-500/30 animate-pulse">
+        <i class="fa-solid fa-leaf text-white text-lg"></i>
+      </div>
+      <div>
+        <h1 class="text-lg font-bold tracking-wider">植物的生殖、生長與發育</h1>
+        <p class="text-xs text-white/60">4-1 植物的生殖 (龍騰生物)</p>
+      </div>
+    </div>
+    
+    <!-- 主題切換與音效按鈕 -->
+    <div class="flex items-center space-x-3">
+      <!-- 5款主題切換按鈕 -->
+      <div class="flex bg-black/30 p-1 rounded-lg border border-white/10 space-x-1">
+        <button onclick="changeTheme('theme-forest')" class="w-6 h-6 rounded-full bg-emerald-600 border border-white/30 hover:scale-110 transition-transform" title="森林綠意"></button>
+        <button onclick="changeTheme('theme-ocean')" class="w-6 h-6 rounded-full bg-blue-600 border border-white/30 hover:scale-110 transition-transform" title="海洋晴空"></button>
+        <button onclick="changeTheme('theme-sakura')" class="w-6 h-6 rounded-full bg-pink-600 border border-white/30 hover:scale-110 transition-transform" title="櫻花粉嫩"></button>
+        <button onclick="changeTheme('theme-dark')" class="w-6 h-6 rounded-full bg-slate-800 border border-emerald-400 hover:scale-110 transition-transform" title="暗黑科技"></button>
+        <button onclick="changeTheme('theme-autumn')" class="w-6 h-6 rounded-full bg-orange-600 border border-white/30 hover:scale-110 transition-transform" title="暖陽大地"></button>
+      </div>
+      
+      <!-- 音效開關 -->
+      <button id="btn-sound" onclick="toggleSound()" class="px-3 py-2 bg-white/10 hover:bg-white/20 active:scale-95 rounded-lg border border-white/10 transition-all flex items-center space-x-2">
+        <i id="sound-icon" class="fa-solid fa-volume-high text-emerald-400"></i>
+        <span class="text-xs font-semibold">音效開啟</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- 簡報主體區域 -->
+  <main class="flex-1 w-full max-w-7xl mx-auto px-6 py-4 flex items-center justify-center z-10 relative overflow-hidden">
+    
+    <!-- Slide 1: 封面 -->
+    <section class="slide-container absolute w-full h-full flex flex-col justify-center items-center text-center px-4" id="slide-1">
+      <div class="bg-[var(--card-bg)] p-8 md:p-12 rounded-3xl border border-white/10 backdrop-blur-md max-w-4xl shadow-2xl relative overflow-hidden">
+        <div class="absolute -top-10 -left-10 w-40 h-40 bg-emerald-500/20 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-10 -right-10 w-40 h-40 bg-yellow-500/20 rounded-full blur-3xl"></div>
+        
+        <span class="px-4 py-1.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full text-xs font-bold uppercase tracking-widest mb-6 inline-block">Chapter 4-1 生物科技與自然</span>
+        <h2 class="text-4xl md:text-6xl font-black mb-4 tracking-tight leading-tight">植物的生殖大奧秘</h2>
+        <p class="text-lg md:text-xl text-white/80 max-w-2xl mx-auto mb-8 font-light leading-relaxed">
+          從演化的維度，探討植物如何透過<strong class="text-emerald-400 font-semibold">無性生殖</strong>延續優良基因，以及利用<strong class="text-[var(--accent)] font-semibold">有性生殖與雙重受精</strong>創造適應新環境的無限可能。
+        </p>
+        <div class="flex flex-wrap justify-center gap-4">
+          <button onclick="goToSlide(2)" class="px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-xl transition-all shadow-lg shadow-emerald-500/30 flex items-center space-x-2 active:scale-95">
+            <span>開始探索簡報</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
+          <a href="#interactive-zone" onclick="goToSlide(10)" class="px-6 py-3 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-xl transition-all border border-white/10 flex items-center space-x-2">
+            <i class="fa-solid fa-circle-play text-yellow-400"></i>
+            <span>體驗雙重受精模擬</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 2: 無性生殖 vs 有性生殖 -->
+    <section class="slide-container absolute w-full h-full flex flex-col justify-center px-4 hidden" id="slide-2">
+      <h3 class="text-2xl md:text-3xl font-bold mb-6 text-center"><i class="fa-solid fa-code-compare mr-2 text-emerald-400"></i>無性生殖與有性生殖之大比拼</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto w-full">
+        <!-- 無性生殖 -->
+        <div class="bg-emerald-950/40 p-6 rounded-2xl border border-emerald-500/20 backdrop-blur-md hover:border-emerald-500/40 transition-all group">
+          <div class="flex justify-between items-center mb-4">
+            <h4 class="text-xl font-bold text-emerald-400 flex items-center"><i class="fa-solid fa-clone mr-2"></i>無性生殖 (Asexual)</h4>
+            <span class="text-xs bg-emerald-500/20 text-emerald-300 px-2.5 py-1 rounded-full border border-emerald-500/30">無配子結合</span>
+          </div>
+          <ul class="space-y-3 text-sm text-white/90">
+            <li class="flex items-start"><i class="fa-solid fa-circle-check text-emerald-400 mt-1 mr-2 text-xs"></i><span><strong>遺傳組合極穩定：</strong>後代與親代基因幾乎完全相同，適合穩定環境。</span></li>
+            <li class="flex items-start"><i class="fa-solid fa-circle-check text-emerald-400 mt-1 mr-2 text-xs"></i><span><strong>繁殖速度極快：</strong>不需要尋找配子，能在短時間內迅速擴大族群。</span></li>
+            <li class="flex items-start"><i class="fa-solid fa-triangle-exclamation text-yellow-500 mt-1 mr-2 text-xs"></i><span><strong>缺點：</strong>環境急劇劇變（如溫疫、氣候變遷）時，可能全軍覆沒。</span></li>
+            <li class="flex items-start"><i class="fa-solid fa-seedling text-emerald-400 mt-1 mr-2 text-xs"></i><span><strong>代表例：</strong>非洲菫扦插、草莓走莖、落地生根葉。</span></li>
+          </ul>
+        </div>
+        <!-- 有性生殖 -->
+        <div class="bg-blue-950/40 p-6 rounded-2xl border border-blue-500/20 backdrop-blur-md hover:border-blue-500/40 transition-all group">
+          <div class="flex justify-between items-center mb-4">
+            <h4 class="text-xl font-bold text-blue-400 flex items-center"><i class="fa-solid fa-shuffle mr-2"></i>有性生殖 (Sexual)</h4>
+            <span class="text-xs bg-blue-500/20 text-blue-300 px-2.5 py-1 rounded-full border border-blue-500/30">經雌雄配子結合</span>
+          </div>
+          <ul class="space-y-3 text-sm text-white/90">
+            <li class="flex items-start"><i class="fa-solid fa-circle-check text-blue-400 mt-1 mr-2 text-xs"></i><span><strong>高基因多樣性：</strong>經減數分裂與基因重組，後代個體差異大。</span></li>
+            <li class="flex items-start"><i class="fa-solid fa-circle-check text-blue-400 mt-1 mr-2 text-xs"></i><span><strong>適應能力強：</strong>當生存環境改變時，較高機會有適應新品種生存。</span></li>
+            <li class="flex items-start"><i class="fa-solid fa-triangle-exclamation text-yellow-500 mt-1 mr-2 text-xs"></i><span><strong>缺點：</strong>繁殖過程繁瑣，需耗費能量形成花朵、傳粉與受精。</span></li>
+            <li class="flex items-start"><i class="fa-solid fa-leaf text-blue-400 mt-1 mr-2 text-xs"></i><span><strong>代表例：</strong>被子植物透過開花、傳粉、雙重受精產生種子。</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 3: 自然營養繁殖 -->
+    <section class="slide-container absolute w-full h-full flex flex-col justify-center px-4 hidden" id="slide-3">
+      <h3 class="text-2xl md:text-3xl font-bold mb-3 text-center"><i class="fa-solid fa-seedling mr-2 text-emerald-400"></i>植物自備的複製本領：自然營養繁殖</h3>
+      <p class="text-center text-sm text-white/70 mb-6 max-w-2xl mx-auto">植物能以其營養器官（根、莖、葉）直接進行繁殖。點擊下方卡片，翻轉看秘密構造！</p>
+      
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-4 max-w-6xl mx-auto w-full">
+        <!-- Card 1: 番薯塊根 -->
+        <div class="flip-card h-48 cursor-pointer group" onclick="this.classList.toggle('flipped')">
+          <div class="flip-card-inner relative w-full h-full text-center rounded-xl shadow-lg">
+            <div class="flip-card-front absolute inset-0 bg-emerald-900/50 border border-white/10 rounded-xl flex flex-col justify-center items-center p-3">
+              <span class="text-4xl mb-2">🍠</span>
+              <h4 class="font-bold text-base">番薯塊根</h4>
+              <p class="text-xs text-white/50 mt-1">器官：根</p>
+            </div>
+            <div class="flip-card-back absolute inset-0 bg-emerald-500 border border-emerald-400 rounded-xl flex flex-col justify-center items-center p-3 text-xs">
+              <p class="font-bold mb-1">番薯 (地瓜)</p>
+              <p>利用膨大的「塊根」儲存大量澱粉，在溫暖處會長出不定芽與不定根，長成新植株。</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2: 竹根莖 -->
+        <div class="flip-card h-48 cursor-pointer group" onclick="this.classList.toggle('flipped')">
+          <div class="flip-card-inner relative w-full h-full text-center rounded-xl shadow-lg">
+            <div class="flip-card-front absolute inset-0 bg-emerald-900/50 border border-white/10 rounded-xl flex flex-col justify-center items-center p-3">
+              <span class="text-4xl mb-2">🎋</span>
+              <h4 class="font-bold text-base">竹之根莖</h4>
+              <p class="text-xs text-white/50 mt-1">器官：地下莖</p>
+            </div>
+            <div class="flip-card-back absolute inset-0 bg-emerald-500 border border-emerald-400 rounded-xl flex flex-col justify-center items-center p-3 text-xs">
+              <p class="font-bold mb-1">竹子與竹筍</p>
+              <p>其「根莖」於地下橫向延伸，其節上的芽能向上抽長成筍（進而長成新竹），達到群生效果。</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 3: 落地生根葉 -->
+        <div class="flip-card h-48 cursor-pointer group" onclick="this.classList.toggle('flipped')">
+          <div class="flip-card-inner relative w-full h-full text-center rounded-xl shadow-lg">
+            <div class="flip-card-front absolute inset-0 bg-emerald-900/50 border border-white/10 rounded-xl flex flex-col justify-center items-center p-3">
+              <span class="text-4xl mb-2">🍃</span>
+              <h4 class="font-bold text-base">落地生根葉</h4>
+              <p class="text-xs text-white/50 mt-1">器官：葉</p>
+            </div>
+            <div class="flip-card-back absolute inset-0 bg-emerald-500 border border-emerald-400 rounded-xl flex flex-col justify-center items-center p-3 text-xs">
+              <p class="font-bold mb-1">落地生根</p>
+              <p>肥厚的葉片邊緣缺刻處，會長出精巧的小植株（具芽與根），掉落土中即可迅速成長。</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 4: 馬鈴薯塊莖 -->
+        <div class="flip-card h-48 cursor-pointer group" onclick="this.classList.toggle('flipped')">
+          <div class="flip-card-inner relative w-full h-full text-center rounded-xl shadow-lg">
+            <div class="flip-card-front absolute inset-0 bg-emerald-900/50 border border-white/10 rounded-xl flex flex-col justify-center items-center p-3">
+              <span class="text-4xl mb-2">🥔</span>
+              <h4 class="font-bold text-base">馬鈴薯塊莖</h4>
+              <p class="text-xs text-white/50 mt-1">器官：塊莖</p>
+            </div>
+            <div class="flip-card-back absolute inset-0 bg-emerald-500 border border-emerald-400 rounded-xl flex flex-col justify-center items-center p-3 text-xs">
+              <p class="font-bold mb-1">馬鈴薯</p>
+              <p>地下「塊莖」膨大，其上的「芽眼」富含分生組織，在適宜濕度下會快速萌發新芽。</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 5: 草莓走莖 -->
+        <div class="flip-card h-48 cursor-pointer group" onclick="this.classList.toggle('flipped')">
+          <div class="flip-card-inner relative w-full h-full text-center rounded-xl shadow-lg">
+            <div class="flip-card-front absolute inset-0 bg-emerald-900/50 border border-white/10 rounded-xl flex flex-col justify-center items-center p-3">
+              <span class="text-4xl mb-2">🍓</span>
+              <h4 class="font-bold text-base">草莓走莖</h4>
+              <p class="text-xs text-white/50 mt-1">器官：匍匐莖</p>
+            </div>
+            <div class="flip-card-back absolute inset-0 bg-emerald-500 border border-emerald-400 rounded-xl flex flex-col justify-center items-center p-3 text-xs">
+              <p class="font-bold mb-1">草莓匍匐生殖</p>
+              <p>「走莖」橫向貼地生長，其節部與地面接觸時，能迅速分化出不定根與不定芽以形成新株。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 4: 農業營養繁殖技術 -->
+    <section class="slide-container absolute w-full h-full flex flex-col justify-center px-4 hidden" id="slide-4">
+      <h3 class="text-2xl md:text-3xl font-bold mb-3 text-center"><i class="fa-solid fa-screwdriver-wrench mr-2 text-emerald-400"></i>人為智慧的延續：農業營養繁殖</h3>
+      <p class="text-center text-sm text-white/70 mb-6 max-w-2xl mx-auto">農業上常以此法保持品種優良、縮短幼年期、提早開花結果。請點擊切換不同繁殖法：</p>
+      
+      <div class="max-w-4xl mx-auto w-full flex flex-col md:flex-row bg-emerald-950/40 rounded-2xl border border-white/10 overflow-hidden backdrop-blur-md">
+        <!-- 側邊 Tabs -->
+        <div class="md:w-1/3 border-r border-white/10 bg-black/20 flex md:flex-col overflow-x-auto md:overflow-x-visible">
+          <button onclick="switchTab('tab-cutting')" id="btn-tab-cutting" class="tab-btn w-full px-5 py-4 text-left font-semibold text-sm border-b border-white/10 bg-emerald-500/20 text-emerald-400 transition-all flex items-center space-x-2">
+            <i class="fa-solid fa-scissors"></i><span>1. 扦插法 (Cutting)</span>
+          </button>
+          <button onclick="switchTab('tab-grafting')" id="btn-tab-grafting" class="tab-btn w-full px-5 py-4 text-left font-semibold text-sm border-b border-white/10 text-white/70 hover:bg-white/5 transition-all flex items-center space-x-2">
+            <i class="fa-solid fa-link"></i><span>2. 嫁接法 (Grafting)</span>
+          </button>
+          <button onclick="switchTab('tab-layering')" id="btn-tab-layering" class="tab-btn w-full px-5 py-4 text-left font-semibold text-sm border-b border-white/10 text-white/70 hover:bg-white/5 transition-all flex items-center space-x-2">
+            <i class="fa-solid fa-compress"></i><span>3. 壓條法 (Layering)</span>
+          </button>
+          <button onclick="switchTab('tab-air')" id="btn-tab-air" class="tab-btn w-full px-5 py-4 text-left font-semibold text-sm text-white/70 hover:bg-white/5 transition-all flex items-center space-x-2">
+            <i class="fa-solid fa-shield-halved"></i><span>4. 高壓法 (Air Layering)</span>
+          </button>
+        </div>
+        <!-- 內容呈現 -->
+        <div class="p-6 md:w-2/3 flex flex-col justify-between">
+          <div id="tab-content" class="space-y-4">
+            <!-- 扦插內容 (預設) -->
+            <div id="content-cutting" class="tab-pane active">
+              <h4 class="text-xl font-bold text-emerald-300">扦插法 - 最簡便的無性繁殖</h4>
+              <p class="text-sm text-white/80 leading-relaxed">
+                將植物的枝條、葉片或根剪下，插入濕潤的介質（沙土、蛭石或水）中。分生組織會感應重力與生長素流向，在傷口處分化出<strong class="text-emerald-400">不定根</strong>，進而發育成獨立的新個體。
+              </p>
+              <div class="bg-black/30 p-3 rounded-lg border border-white/5 text-xs">
+                <p class="font-semibold text-yellow-400"><i class="fa-solid fa-lightbulb mr-1"></i>經典案例與小叮嚀：</p>
+                <p class="mt-1">非洲菫（葉插）、玫瑰、桑樹、烏來杜鵑（原棲地淹沒，多用扦插法成功復育）。</p>
+              </div>
+            </div>
+            <!-- 嫁接內容 -->
+            <div id="content-grafting" class="tab-pane hidden">
+              <h4 class="text-xl font-bold text-emerald-300">嫁接法 - 強強聯手，優勢組合</h4>
+              <p class="text-sm text-white/80 leading-relaxed">
+                將欲繁殖的植物枝條或芽（稱為<strong class="text-yellow-400">接穗</strong>）接在另一株具強健根系植物（稱為<strong class="text-emerald-400">砧木</strong>）的枝幹上。關鍵在於：必須將接穗與砧木的<strong class="text-[var(--accent)] font-bold">維管束形成層對齊</strong>，使其細胞癒合導管相通。
+              </p>
+              <div class="bg-black/30 p-3 rounded-lg border border-white/5 text-xs">
+                <p class="font-semibold text-yellow-400"><i class="fa-solid fa-lightbulb mr-1"></i>經典案例與小叮嚀：</p>
+                <p class="mt-1">火龍果嫁接蟹爪仙人掌、高接梨（將溫帶水梨接穗嫁接到熱帶橫山梨砧木上，在平地即可生產甜美溫帶梨）。</p>
+              </div>
+            </div>
+            <!-- 壓條內容 -->
+            <div id="content-layering" class="tab-pane hidden">
+              <h4 class="text-xl font-bold text-emerald-300">壓條法 - 不脫離母體的安全牌</h4>
+              <p class="text-sm text-white/80 leading-relaxed">
+                適用於枝條柔軟且靠近地面的植物。將健康的枝條中段稍微刻傷，彎曲壓入土中並以土覆蓋，顶端露出地面。因刻傷處有機養分累積，會誘發長出<strong class="text-emerald-400">不定根</strong>。待根系發育健全後，再與母體剪斷分離。
+              </p>
+              <div class="bg-black/30 p-3 rounded-lg border border-white/5 text-xs">
+                <p class="font-semibold text-yellow-400"><i class="fa-solid fa-lightbulb mr-1"></i>經典案例與小叮嚀：</p>
+                <p class="mt-1">茉莉花、連翹。此法成功率高達100%，因為在發根過程中能持續獲得母體水分養分支持。</p>
+              </div>
+            </div>
+            <!-- 高壓內容 -->
+            <div id="content-air" class="tab-pane hidden">
+              <h4 class="text-xl font-bold text-emerald-300">高壓法 (空中壓條法) - 喬木救星</h4>
+              <p class="text-sm text-white/80 leading-relaxed">
+                適用於高大、枝條不易彎曲到地面的喬木。在樹枝上進行<strong class="text-yellow-400">環狀剝皮</strong>（阻斷篩管輸送，使有機養分累積在傷口上端），接著用濕潤的水苔包覆，外包塑膠袋綁緊保濕。待內部發出大量白根，剪下即是一棵健壯新幼苗。
+              </p>
+              <div class="bg-black/30 p-3 rounded-lg border border-white/5 text-xs">
+                <p class="font-semibold text-yellow-400"><i class="fa-solid fa-lightbulb mr-1"></i>經典案例與小叮嚀：</p>
+                <p class="mt-1">荔枝、龍眼、蓮霧、榕樹盆栽。環狀剝皮是關鍵，深及形成層但不傷及木質部。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 5: 植物組織培養與細胞全潛能性 -->
+    <section class="slide-container absolute w-full h-full flex flex-col justify-center px-4 hidden" id="slide-5">
+      <h3 class="text-2xl md:text-3xl font-bold mb-3 text-center"><i class="fa-solid fa-flask-vial mr-2 text-emerald-400"></i>終極複製人技術：植物組織培養</h3>
+      <p class="text-center text-sm text-white/70 mb-4 max-w-2xl mx-auto">1958年 Steward 教授發現植物的每個活細胞都蘊含全套遺傳藍圖，只要給予正確的激素配比，就能分化成一株完整的植物，此為 <strong class="text-yellow-400">細胞全潛能性 (Totipotency)</strong>。</p>
+      
+      <!-- 互動流程圖 -->
+      <div class="max-w-5xl mx-auto w-full grid grid-cols-1 md:grid-cols-5 gap-4">
+        <div onclick="playStepSound()" class="bg-white/5 p-4 rounded-xl border border-white/10 hover:border-emerald-500/50 hover:bg-emerald-500/10 transition-all text-center cursor-pointer group">
+          <div class="w-10 h-10 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold mx-auto mb-2 group-hover:scale-110 transition-transform">1</div>
+          <h4 class="font-semibold text-emerald-300 mb-1">外植體切取</h4>
+          <p class="text-xs text-white/60">自胡蘿蔔或蘭花切下微小的根、莖或葉組織，經嚴格表面消毒。</p>
+        </div>
+        
+        <div onclick="playStepSound()" class="bg-white/5 p-4 rounded-xl border border-white/10 hover:border-emerald-500/50 hover:bg-emerald-500/10 transition-all text-center cursor-pointer group">
+          <div class="w-10 h-10 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold mx-auto mb-2 group-hover:scale-110 transition-transform">2</div>
+          <h4 class="font-semibold text-emerald-300 mb-1">無菌培養基</h4>
+          <p class="text-xs text-white/60">置於含有蔗糖、礦物質、維生素、瓊脂及生長素與細胞分裂素的試管中。</p>
+        </div>
+        
+        <div onclick="playStepSound()" class="bg-white/5 p-4 rounded-xl border border-white/10 hover:border-emerald-500/50 hover:bg-emerald-500/10 transition-all text-center cursor-pointer group">
+          <div class="w-10 h-10 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold mx-auto mb-2 group-hover:scale-110 transition-transform">3</div>
+          <h4 class="font-semibold text-emerald-300 mb-1">形成癒傷組織</h4>
+          <p class="text-xs text-white/60">細胞脫分化，進行旺盛的有絲分裂，形成一群無特定功能、排列混亂的<strong class="text-yellow-400">癒傷組織 (Callus)</strong>。</p>
+        </div>
+        
+        <div onclick="playStepSound()" class="bg-white/5 p-4 rounded-xl border border-white/10 hover:border-emerald-500/50 hover:bg-emerald-500/10 transition-all text-center cursor-pointer group">
+          <div class="w-10 h-10 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold mx-auto mb-2 group-hover:scale-110 transition-transform">4</div>
+          <h4 class="font-semibold text-emerald-300 mb-1">再分化成苗</h4>
+          <p class="text-xs text-white/60">調整生長素與分裂素比例（高分裂素誘導芽，高生長素引導根），分化出新芽與不定根。</p>
+        </div>
+        
+        <div onclick="playStepSound()" class="bg-white/5 p-4 rounded-xl border border-white/10 hover:border-emerald-500/50 hover:bg-emerald-500/10 transition-all text-center cursor-pointer group">
+          <div class="w-10 h-10 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold mx-auto mb-2 group-hover:scale-110 transition-transform">5</div>
+          <h4 class="font-semibold text-emerald-300 mb-1">馴化與移植</h4>
+          <p class="text-xs text-white/60">小苗經溫室漸進馴化、適應自然環境後，方可移植至田間進行大規模栽培。</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 6: 世代交替 -->
+    <section class="slide-container absolute w-full h-full flex flex-col justify-center px-4 hidden" id="slide-6">
+      <h3 class="text-2xl md:text-3xl font-bold mb-4 text-center"><i class="fa-solid fa-arrows-spin mr-2 text-emerald-400"></i>植物一生的奇幻旅程：世代交替</h3>
+      <p class="text-center text-sm text-white/70 mb-6 max-w-2xl mx-auto">在植物的生命史中，<strong class="text-emerald-300">孢子體世代 (2n)</strong> 與 <strong class="text-blue-300">配子體世代 (n)</strong> 在生命週期中會交替出現。點擊按鈕探索核心：</p>
+      
+      <div class="max-w-5xl mx-auto w-full grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- 孢子體 (2n) -->
+        <div class="bg-emerald-950/30 p-5 rounded-2xl border border-emerald-500/30 text-center">
+          <div class="w-12 h-12 rounded-xl bg-emerald-500 text-white flex items-center justify-center text-xl font-bold mx-auto mb-3">2n</div>
+          <h4 class="text-lg font-bold text-emerald-400 mb-2">孢子體世代 (二倍體)</h4>
+          <p class="text-sm text-white/80 leading-relaxed">
+            植物體由<strong class="text-emerald-300">多細胞雙倍體</strong>構成。部分分生組織進行<strong class="text-yellow-400 font-bold">減數分裂</strong>，形成單套的孢子 (n)。在陸地演化中，孢子體越來越優勢（例如大樹）。
+          </p>
+        </div>
+        
+        <!-- 連接轉換機制 -->
+        <div class="bg-black/30 p-5 rounded-2xl border border-white/10 flex flex-col justify-center space-y-4">
+          <div class="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-center">
+            <span class="text-xs font-bold text-red-400 uppercase tracking-widest block">分水嶺 1</span>
+            <p class="text-sm font-semibold mt-1 text-red-300">減數分裂 (Meiosis)</p>
+            <p class="text-xs text-white/60">2n 孢子體經此轉變為 n 孢子</p>
+          </div>
+          <div class="p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl text-center">
+            <span class="text-xs font-bold text-blue-400 uppercase tracking-widest block">分水嶺 2</span>
+            <p class="text-sm font-semibold mt-1 text-blue-300">受精作用 (Fertilization)</p>
+            <p class="text-xs text-white/60">n 的雌雄配子結合成 2n 合子</p>
+          </div>
+        </div>
+        
+        <!-- 配子體 (n) -->
+        <div class="bg-blue-950/30 p-5 rounded-2xl border border-blue-500/30 text-center">
+          <div class="w-12 h-12 rounded-xl bg-blue-500 text-white flex items-center justify-center text-xl font-bold mx-auto mb-3">n</div>
+          <h4 class="text-lg font-bold text-blue-400 mb-2">配子體世代 (單倍體)</h4>
+          <p class="text-sm text-white/80 leading-relaxed">
+            由單套孢子經<strong class="text-emerald-300">有絲分裂</strong>發育而成的多細胞單倍體結構。其能以有絲分裂產生精、卵等配子 (n)。在蘚苔類中，配子體（如綠色苔面）反而比孢子體大。
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 7: 花的完整構造與分類 -->
+    <section class="slide-container absolute w-full h-full flex flex-col justify-center px-4 hidden" id="slide-7">
+      <h3 class="text-2xl md:text-3xl font-bold mb-3 text-center"><i class="fa-solid fa-wand-magic-sparkles mr-2 text-emerald-400"></i>被子植物的生殖核心：花的構造與分類</h3>
+      <p class="text-center text-sm text-white/70 mb-6 max-w-2xl mx-auto">花是由葉特化而來的變態枝，是進行有性生殖的璀璨舞台。點擊下方關鍵器官來了解：</p>
+      
+      <div class="max-w-5xl mx-auto w-full grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+        <!-- SVG 示意圖 -->
+        <div class="md:col-span-6 bg-black/20 p-4 rounded-2xl border border-white/10 flex justify-center">
+          <!-- 自繪向量花構造 -->
+          <svg width="280" height="280" viewBox="0 0 100 100" class="hover:scale-105 transition-transform">
+            <!-- 萼片 -->
+            <path d="M 35 70 Q 25 65 30 55 Q 38 60 38 70 Z" fill="#22c55e" stroke="#16a34a" stroke-width="0.5"/>
+            <path d="M 65 70 Q 75 65 70 55 Q 62 60 62 70 Z" fill="#22c55e" stroke="#16a34a" stroke-width="0.5"/>
+            <!-- 花托 -->
+            <path d="M 38 70 Q 50 82 62 70 Q 50 68 38 70" fill="#15803d"/>
+            <rect x="47" y="75" width="6" height="15" fill="#16a34a"/>
+            <!-- 花瓣 -->
+            <path d="M 25 55 Q 10 30 30 25 Q 38 45 35 55" fill="#ec4899" opacity="0.95" />
+            <path d="M 75 55 Q 90 30 70 25 Q 62 45 65 55" fill="#ec4899" opacity="0.95" />
+            <path d="M 30 25 Q 50 5 70 25 Q 50 40 30 25" fill="#f472b6" opacity="0.95" />
+            <!-- 子房與胚珠 -->
+            <ellipse cx="50" cy="58" rx="10" ry="12" fill="#86efac" stroke="#16a34a" stroke-width="1"/>
+            <!-- 胚珠 -->
+            <circle cx="47" cy="54" r="2" fill="#fef08a" class="animate-ping"/>
+            <circle cx="53" cy="54" r="2" fill="#fef08a"/>
+            <circle cx="47" cy="62" r="2" fill="#fef08a"/>
+            <circle cx="53" cy="62" r="2" fill="#fef08a"/>
+            <!-- 花柱與柱頭 -->
+            <rect x="48" y="30" width="4" height="17" fill="#86efac"/>
+            <ellipse cx="50" cy="28" rx="4" ry="2" fill="#4ade80" stroke="#16a34a"/>
+            <!-- 雄蕊 -->
+            <path d="M 38 68 Q 33 45 35 35" fill="none" stroke="#e2e8f0" stroke-width="1.2"/>
+            <ellipse cx="35" cy="33" rx="3" ry="2" fill="#facc15"/>
+            <path d="M 62 68 Q 67 45 65 35" fill="none" stroke="#e2e8f0" stroke-width="1.2"/>
+            <ellipse cx="65" cy="33" rx="3" ry="2" fill="#facc15"/>
+          </svg>
+        </div>
+        
+        <!-- 文字與互動面版 -->
+        <div class="md:col-span-6 space-y-3">
+          <div onclick="showFlowerPart('stigma', '柱頭', '分泌黏液且表面常有絨毛，用以捕捉花粉粒，也是花粉萌發花粉管的唯一場所。')" class="p-3 bg-white/5 hover:bg-emerald-500/10 border border-white/10 rounded-xl cursor-pointer flex items-center space-x-3 transition-all">
+            <span class="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">1</span>
+            <div>
+              <h5 class="font-bold">柱頭 (Stigma)</h5>
+              <p class="text-xs text-white/50">點擊看功能說明...</p>
+            </div>
+          </div>
+          
+          <div onclick="showFlowerPart('anther', '花藥與花粉粒', '雄蕊末端膨大構造。內含4個花粉囊，孢原細胞經減數分裂產生小孢子，再發育為花粉粒（成熟雄配子體的前身）。')" class="p-3 bg-white/5 hover:bg-yellow-500/10 border border-white/10 rounded-xl cursor-pointer flex items-center space-x-3 transition-all">
+            <span class="w-8 h-8 rounded-full bg-yellow-500/20 text-yellow-400 flex items-center justify-center font-bold">2</span>
+            <div>
+              <h5 class="font-bold">花藥 (Anther)</h5>
+              <p class="text-xs text-white/50">生產花粉的兵工廠...</p>
+            </div>
+          </div>
+          
+          <div onclick="showFlowerPart('ovary', '子房與胚珠', '雌蕊基部的膨大構造。受精後，子房壁將發育為【果皮】，內含的胚珠發育為【種子】。')" class="p-3 bg-white/5 hover:bg-pink-500/10 border border-white/10 rounded-xl cursor-pointer flex items-center space-x-3 transition-all">
+            <span class="w-8 h-8 rounded-full bg-pink-500/20 text-pink-400 flex items-center justify-center font-bold">3</span>
+            <div>
+              <h5 class="font-bold">子房與胚珠 (Ovary & Ovule)</h5>
+              <p class="text-xs text-white/50">孕育後代的溫床...</p>
+            </div>
+          </div>
+          
+          <!-- 動態更新的彈出卡片 -->
+          <div id="flower-info-box" class="p-4 bg-emerald-950/60 rounded-xl border border-emerald-500/30 text-xs hidden animate-fade-in">
+            <h6 id="flower-info-title" class="font-bold text-sm text-emerald-300 mb-1"></h6>
+            <p id="flower-info-desc" class="text-white/80 leading-relaxed"></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 8: 配子體的發育 -->
+    <section class="slide-container absolute w-full h-full flex flex-col justify-center px-4 hidden" id="slide-8">
+      <h3 class="text-2xl md:text-3xl font-bold mb-4 text-center"><i class="fa-solid fa-person-half-dress mr-2 text-emerald-400"></i>微觀大視界：雌雄配子體的發育歷程</h3>
+      <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- 雄配子體 (花粉粒) -->
+        <div class="bg-black/20 p-5 rounded-2xl border border-white/10 backdrop-blur-md">
+          <h4 class="text-lg font-bold text-yellow-400 mb-3 flex items-center"><i class="fa-solid fa-mars mr-2"></i>雄配子體發育 (花粉)</h4>
+          <div class="space-y-3 text-sm">
+            <div class="flex items-start">
+              <span class="w-6 h-6 rounded-full bg-yellow-500 text-black flex items-center justify-center font-black text-xs mt-0.5 mr-2">1</span>
+              <p><strong class="text-yellow-300">小孢子母細胞 (2n)</strong> 在花藥中，經<strong class="text-emerald-300">減數分裂</strong>形成 4 個單倍體的<strong class="text-emerald-300">小孢子 (n)</strong>。</p>
+            </div>
+            <div class="flex items-start">
+              <span class="w-6 h-6 rounded-full bg-yellow-500 text-black flex items-center justify-center font-black text-xs mt-0.5 mr-2">2</span>
+              <p>每個小孢子進行 1 次<strong class="text-emerald-300">有絲分裂</strong>，產生 1 個大的<strong class="text-emerald-300">營養細胞 (管細胞)</strong> 與 1 個小的<strong class="text-emerald-300">生殖細胞</strong>，形成花粉粒（未成熟雄配子體）。</p>
+            </div>
+            <div class="flex items-start">
+              <span class="w-6 h-6 rounded-full bg-yellow-500 text-black flex items-center justify-center font-black text-xs mt-0.5 mr-2">3</span>
+              <p>當花粉落到柱頭並萌發花粉管時，生殖細胞會再進行 1 次有絲分裂，產生 <strong class="text-[var(--accent)] font-bold">2 個精細胞 (n)</strong>，成為成熟的雄配子體（管核+2精核）。</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 雌配子體 (胚囊) -->
+        <div class="bg-black/20 p-5 rounded-2xl border border-white/10 backdrop-blur-md">
+          <h4 class="text-lg font-bold text-pink-400 mb-3 flex items-center"><i class="fa-solid fa-venus mr-2"></i>雌配子體發育 (胚囊)</h4>
+          <div class="space-y-3 text-sm">
+            <div class="flex items-start">
+              <span class="w-6 h-6 rounded-full bg-pink-500 text-white flex items-center justify-center font-black text-xs mt-0.5 mr-2">1</span>
+              <p><strong class="text-pink-300">大孢子母細胞 (2n)</strong> 在胚珠中，進行減數分裂產生 4 個大孢子，其中 <strong class="text-red-400 font-semibold">3 個退化消失</strong>，僅存 1 個大孢子 (n)。</p>
+            </div>
+            <div class="flex items-start">
+              <span class="w-6 h-6 rounded-full bg-pink-500 text-white flex items-center justify-center font-black text-xs mt-0.5 mr-2">2</span>
+              <p>僅存的大孢子在胚珠內部連續進行 <strong class="text-emerald-300 font-semibold">3 次有絲分裂</strong>（只分裂核不分細胞質），形成一個具有 8 個單套細胞核的巨型結構。</p>
+            </div>
+            <div class="flex items-start">
+              <span class="w-6 h-6 rounded-full bg-pink-500 text-white flex items-center justify-center font-black text-xs mt-0.5 mr-2">3</span>
+              <p>核重新分配排列並產生細胞壁，形成經典的 <strong class="text-emerald-300 font-bold">7 細胞 8 核</strong> 胚囊（成熟雌配子體）：包含 1 卵細胞(n)、2 助細胞、3 反足細胞與中央具有 2 核心的<strong class="text-yellow-300">中央細胞 (n+n)</strong>。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 9: 傳粉與演化適應 -->
+    <section class="slide-container absolute w-full h-full flex flex-col justify-center px-4 hidden" id="slide-9">
+      <h3 class="text-2xl md:text-3xl font-bold mb-4 text-center"><i class="fa-solid fa-wind mr-2 text-emerald-400"></i>大自然中的媒人：傳粉機制與適應</h3>
+      
+      <div class="max-w-5xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- 傳粉方式比較 -->
+        <div class="bg-black/20 p-5 rounded-2xl border border-white/10 backdrop-blur-md">
+          <h4 class="text-lg font-bold text-emerald-400 mb-3"><i class="fa-solid fa-circle-nodes mr-2"></i>蟲媒花 vs 風媒花</h4>
+          <div class="space-y-3 text-xs md:text-sm">
+            <div class="p-3 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
+              <p class="font-semibold text-emerald-300">🌸 蟲媒花 (Insect-pollinated)</p>
+              <p class="text-white/80 mt-1">花冠大且色彩鮮豔、具有明顯蜜腺或散發濃郁氣味。花粉粒大、有突起或黏性，極易附著在昆蟲身上。（如：朱槿、百合、曇花）。</p>
+            </div>
+            <div class="p-3 bg-blue-500/10 rounded-lg border border-blue-500/20">
+              <p class="font-semibold text-blue-300">🌾 風媒花 (Wind-pollinated)</p>
+              <p class="text-white/80 mt-1">花朵不顯眼、無蜜腺。花粉粒乾而輕、數量極龐大。柱頭常成羽毛狀延伸，以便隨風捕捉空中的花粉粒。（如：水稻、玉米）。</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 植物與傳粉者的協同演化 -->
+        <div class="bg-black/20 p-5 rounded-2xl border border-white/10 backdrop-blur-md flex flex-col justify-between">
+          <div>
+            <h4 class="text-lg font-bold text-[var(--accent)] mb-2"><i class="fa-solid fa-infinity mr-2"></i>協同進化 (Coevolution) 經典</h4>
+            <p class="text-sm text-white/90 leading-relaxed mb-4">
+              <strong>台灣百合與天蛾：</strong><br>
+              台灣百合的花冠筒深達 14∼18 公分，其蜜腺深藏在基部，且偏好在夜間散發白花香氣。這完美配合了具有<strong class="text-yellow-400">超長口器</strong>且是<strong class="text-yellow-400">夜行性</strong>的「甘藷蝦殼天蛾」。在天蛾探頭吸蜜時，正好為百合完成了精確傳粉。
+            </p>
+          </div>
+          <div class="bg-black/40 p-4 rounded-xl border border-white/10">
+            <h5 class="font-bold text-yellow-400 text-xs mb-1"><i class="fa-solid fa-circle-question mr-1"></i>植物學想一想：</h5>
+            <p class="text-xs text-white/80">
+              所謂「曇花一現」的曇花，為什麼一定要選在半夜才開花？<br>
+              <span class="text-emerald-400 font-semibold mt-1 block">💡 解答：曇花原產於炎熱乾燥美洲，夜間開花可大幅減少水分蒸發，並由夜行性哺乳類（如蝙蝠）或天蛾來傳粉。</span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 10: 雙重受精模擬 (重點互動區域) -->
+    <section class="slide-container absolute w-full h-full flex flex-col justify-center px-4 hidden" id="slide-10">
+      <h3 class="text-2xl md:text-3xl font-bold mb-2 text-center"><i class="fa-solid fa-gamepad mr-2 text-emerald-400"></i>被子植物的專屬魔術：雙重受精互動模擬</h3>
+      <p class="text-center text-xs text-white/70 mb-4 max-w-2xl mx-auto">雙重受精是被子植物特有的現象。花粉管內有兩個精細胞，請點擊按鈕，觀察兩精細胞各自的宿命吧！</p>
+      
+      <!-- 互動視窗 -->
+      <div id="interactive-zone" class="max-w-4xl mx-auto w-full bg-slate-950 rounded-2xl border border-emerald-500/30 overflow-hidden relative shadow-2xl flex flex-col md:flex-row h-96">
+        
+        <!-- 左邊控制板 -->
+        <div class="md:w-1/3 bg-slate-900 p-5 flex flex-col justify-between border-r border-white/10">
+          <div>
+            <h4 class="font-bold text-emerald-400 mb-2">精細胞旅行軌跡</h4>
+            <p class="text-xs text-white/70 leading-relaxed mb-4">
+              當花粉管萌發抵達胚囊後，會由珠孔伸入並釋放 2 個精細胞。
+            </p>
+            <div class="space-y-2 text-xs">
+              <div class="flex items-center space-x-2">
+                <span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>
+                <span>精細胞 (1) + 卵 (n) ➜ <strong class="text-emerald-400">合子 (2n)</strong></span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <span class="w-3 h-3 rounded-full bg-yellow-400 inline-block"></span>
+                <span>精細胞 (2) + 2極核 (n+n) ➜ <strong class="text-yellow-400">胚乳 (3n)</strong></span>
+              </div>
+            </div>
+          </div>
+          
+          <button id="btn-fertilize" onclick="triggerFertilization()" class="w-full py-3 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/20 transition-all flex items-center justify-center space-x-2">
+            <i class="fa-solid fa-play"></i>
+            <span>發射精細胞！</span>
+          </button>
+        </div>
+        
+        <!-- 右邊動畫畫布 -->
+        <div class="md:w-2/3 relative bg-slate-950 flex items-center justify-center p-4">
+          <!-- 胚囊與受精動畫 SVG + Canvas 整合 -->
+          <svg id="embryo-sac" width="100%" height="100%" viewBox="0 0 400 300" class="w-full h-full max-h-72">
+            <!-- 胚囊輪廓 -->
+            <ellipse cx="200" cy="150" rx="120" ry="100" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="2"/>
+            <ellipse cx="200" cy="150" rx="110" ry="90" fill="rgba(6, 78, 59, 0.2)" stroke="#047857" stroke-dasharray="4 4" stroke-width="1.5"/>
+            
+            <!-- 反足細胞 (上方三個) -->
+            <circle cx="140" cy="80" r="10" fill="rgba(255,255,255,0.15)" stroke="#64748b"/>
+            <circle cx="200" cy="70" r="10" fill="rgba(255,255,255,0.15)" stroke="#64748b"/>
+            <circle cx="260" cy="80" r="10" fill="rgba(255,255,255,0.15)" stroke="#64748b"/>
+            <text x="200" y="55" fill="#94a3b8" font-size="9" text-anchor="middle">反足細胞 x3</text>
+            
+            <!-- 極核 (中央兩個) -->
+            <g id="polar-nuclei">
+              <circle cx="190" cy="140" r="10" fill="rgba(234, 179, 8, 0.3)" stroke="#eab308" stroke-width="1.5"/>
+              <circle cx="210" cy="140" r="10" fill="rgba(234, 179, 8, 0.3)" stroke="#eab308" stroke-width="1.5"/>
+              <text x="200" y="165" fill="#fef08a" font-size="10" font-weight="bold" text-anchor="middle">中央細胞 (n+n)</text>
+            </g>
+            
+            <!-- 卵細胞與助細胞 (下方) -->
+            <!-- 助細胞 -->
+            <circle cx="160" cy="210" r="12" fill="rgba(148, 163, 184, 0.2)" stroke="#475569"/>
+            <circle cx="240" cy="210" r="12" fill="rgba(148, 163, 184, 0.2)" stroke="#475569"/>
+            <!-- 卵細胞 -->
+            <g id="egg-cell">
+              <circle cx="200" cy="215" r="15" fill="rgba(16, 185, 129, 0.3)" stroke="#10b981" stroke-width="2"/>
+              <text x="200" y="243" fill="#34d399" font-size="11" font-weight="bold" text-anchor="middle">卵細胞 (n)</text>
+            </g>
+            
+            <!-- 花粉管進入 (從下方珠孔) -->
+            <path d="M 200 300 Q 200 270 200 245" fill="none" stroke="#f43f5e" stroke-width="6" stroke-linecap="round" opacity="0.6"/>
+            
+            <!-- 精細胞粒子 (初始隱藏在花粉管中) -->
+            <circle id="sperm-1" cx="200" cy="290" r="6" fill="#10b981" filter="drop-shadow(0 0 4px #10b981)" opacity="0"/>
+            <circle id="sperm-2" cx="200" cy="298" r="6" fill="#fbbf24" filter="drop-shadow(0 0 4px #fbbf24)" opacity="0"/>
+          </svg>
+          
+          <!-- 爆發光芒特效 DOM -->
+          <div id="blast-egg" class="absolute w-12 h-12 bg-emerald-500 rounded-full blur-xl scale-0 opacity-0 pointer-events-none transition-all duration-500"></div>
+          <div id="blast-center" class="absolute w-16 h-16 bg-yellow-400 rounded-full blur-xl scale-0 opacity-0 pointer-events-none transition-all duration-500"></div>
+          
+          <!-- 大字報顯示成果 -->
+          <div id="success-banner" class="absolute inset-0 bg-black/90 flex flex-col justify-center items-center text-center p-6 rounded-2xl opacity-0 pointer-events-none transition-opacity duration-300">
+            <h5 class="text-2xl font-black text-emerald-400 animate-bounce"><i class="fa-solid fa-crown mr-2"></i>雙重受精成功！</h5>
+            <div class="space-y-2 mt-4 max-w-sm text-sm">
+              <p class="p-2 bg-emerald-500/10 rounded border border-emerald-500/30 text-emerald-300">
+                <strong>受精卵 (2n)</strong> 將發育為「胚 (Embryo)」，未來萌發成完整植株！
+              </p>
+              <p class="p-2 bg-yellow-500/10 rounded border border-yellow-500/30 text-yellow-300">
+                <strong>受精極核 (3n)</strong> 發育為「胚乳 (Endosperm)」，為種子儲備黃金養分！
+              </p>
+            </div>
+            <button onclick="resetFertilization()" class="mt-5 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-xs border border-white/20">
+              重播動畫
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 11: 種子與果實的形成及構造 -->
+    <section class="slide-container absolute w-full h-full flex flex-col justify-center px-4 hidden" id="slide-11">
+      <h3 class="text-2xl md:text-3xl font-bold mb-4 text-center"><i class="fa-solid fa-apple-whole mr-2 text-emerald-400"></i>花謝之後：果實與種子的華麗蛻變</h3>
+      
+      <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- 來源配對 -->
+        <div class="bg-black/20 p-5 rounded-2xl border border-white/10 backdrop-blur-md">
+          <h4 class="text-lg font-bold text-emerald-400 mb-3"><i class="fa-solid fa-circle-nodes mr-2"></i>受精後植物器官大配對</h4>
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-white/20 text-white/50 text-left">
+                <th class="pb-2">受精前構造</th>
+                <th class="pb-2"></th>
+                <th class="pb-2 text-emerald-400">發育後構造</th>
+              </tr>
+            </thead>
+            <tbody class="space-y-2">
+              <tr class="border-b border-white/5">
+                <td class="py-2.5">胚珠 (Ovule)</td>
+                <td>➜</td>
+                <td class="text-emerald-300 font-semibold">種子 (Seed)</td>
+              </tr>
+              <tr class="border-b border-white/5">
+                <td class="py-2.5">子房 (Ovary)</td>
+                <td>➜</td>
+                <td class="text-emerald-300 font-semibold">果實 (Fruit)</td>
+              </tr>
+              <tr class="border-b border-white/5">
+                <td class="py-2.5">珠被 (Integument)</td>
+                <td>➜</td>
+                <td class="text-emerald-300 font-semibold">種皮 (Seed Coat)</td>
+              </tr>
+              <tr class="border-b border-white/5">
+                <td class="py-2.5">子房壁 (Ovary Wall)</td>
+                <td>➜</td>
+                <td class="text-emerald-300 font-semibold">果皮 (Pericarp)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 胚乳型與非胚乳型 -->
+        <div class="bg-black/20 p-5 rounded-2xl border border-white/10 backdrop-blur-md flex flex-col justify-between">
+          <div>
+            <h4 class="text-lg font-bold text-yellow-400 mb-2"><i class="fa-solid fa-dna mr-2"></i>大自然便當盒：胚乳型 vs 非胚乳型</h4>
+            <div class="space-y-3 text-xs md:text-sm">
+              <div class="p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-xl">
+                <p class="font-bold text-yellow-300">🌽 胚乳型種子 (Endospermic)</p>
+                <p class="text-white/80 mt-1">
+                  種子成熟時仍保留發達的<strong class="text-yellow-400">胚乳 (3n)</strong>。子葉扁平細小，僅負責吸收與傳遞胚乳養分。（例：單子葉植物玉米、水稻、洋蔥，及部分雙子葉蓖麻）。
+                </p>
+              </div>
+              <div class="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
+                <p class="font-bold text-emerald-300">🌱 非胚乳型種子 (Non-endospermic)</p>
+                <p class="text-white/80 mt-1">
+                  在發育過程中，胚乳被吸收退化消失，養分直接存入肥大發達的<strong class="text-emerald-400">子葉</strong>中。（例：多數雙子葉植物菜豆、大豆、花生，及單子葉慈菇）。
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 12: 果實分類與傳播方式 -->
+    <section class="slide-container absolute w-full h-full flex flex-col justify-center px-4 hidden" id="slide-12">
+      <h3 class="text-2xl md:text-3xl font-bold mb-2 text-center"><i class="fa-solid fa-truck-ramp-box mr-2 text-emerald-400"></i>果實分類與散播大探險</h3>
+      <p class="text-center text-xs text-white/70 mb-4 max-w-2xl mx-auto">果實能提供保護並協助散播，是植物征服世界的利器。請點選下方果實或傳播機制了解：</p>
+      
+      <div class="max-w-5xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- 果實分類 -->
+        <div class="bg-black/20 p-5 rounded-2xl border border-white/10 backdrop-blur-md">
+          <h4 class="text-lg font-bold text-emerald-400 mb-3"><i class="fa-solid fa-leaf mr-2"></i>神奇的果實大分類</h4>
+          <div class="space-y-3 text-xs md:text-sm">
+            <div class="flex items-start bg-black/30 p-2.5 rounded-lg">
+              <span class="text-xl mr-2">🍅</span>
+              <div>
+                <strong class="text-emerald-300">單果 (Simple Fruit)</strong>：一朵花僅具單一子房發育而成。例如番茄、水蜜桃。
+              </div>
+            </div>
+            <div class="flex items-start bg-black/30 p-2.5 rounded-lg">
+              <span class="text-xl mr-2">🍓</span>
+              <div>
+                <strong class="text-emerald-300">聚合果 (Aggregate Fruit)</strong>：一朵花內具有多個獨立雌蕊與子房共同發育而成。例如草莓、黑莓。
+              </div>
+            </div>
+            <div class="flex items-start bg-black/30 p-2.5 rounded-lg">
+              <span class="text-xl mr-2">🍍</span>
+              <div>
+                <strong class="text-emerald-300">多花果/集生果 (Multiple Fruit)</strong>：由整個花序中多朵花聚集共同發育而成。例如鳳梨、無花果。
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 傳播方式 -->
+        <div class="bg-black/20 p-5 rounded-2xl border border-white/10 backdrop-blur-md">
+          <h4 class="text-lg font-bold text-yellow-400 mb-3"><i class="fa-solid fa-location-arrow mr-2"></i>果實散播方式</h4>
+          <div class="grid grid-cols-2 gap-3 text-xs">
+            <div class="p-2.5 bg-sky-500/10 border border-sky-500/20 rounded-lg text-center">
+              <span class="text-xl block mb-1">💨</span>
+              <strong class="text-sky-300">風力傳播</strong>
+              <p class="text-white/60 mt-1">具翅膀或絨毛。乾且輕。（蒲公英、楓樹）</p>
+            </div>
+            <div class="p-2.5 bg-blue-500/10 border border-blue-500/20 rounded-lg text-center">
+              <span class="text-xl block mb-1">🌊</span>
+              <strong class="text-blue-300">水力傳播</strong>
+              <p class="text-white/60 mt-1">外殼富含纖維氣室、防水防鹽。（椰子、棋盤腳）</p>
+            </div>
+            <div class="p-2.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-center">
+              <span class="text-xl block mb-1">🐒</span>
+              <strong class="text-emerald-300">動物傳播</strong>
+              <p class="text-white/60 mt-1">具倒鉤刺附著或肉質甜美鮮豔吸引食用。（咸豐草、奇異果）</p>
+            </div>
+            <div class="p-2.5 bg-orange-500/10 border border-orange-500/20 rounded-lg text-center">
+              <span class="text-xl block mb-1">💥</span>
+              <strong class="text-orange-300">自力彈射</strong>
+              <p class="text-white/60 mt-1">成熟果實乾燥收縮而開裂彈射。（鳳仙花、酢漿草）</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 13: 隨堂互動小測驗 -->
+    <section class="slide-container absolute w-full h-full flex flex-col justify-center px-4 hidden" id="slide-13">
+      <h3 class="text-2xl md:text-3xl font-bold mb-4 text-center"><i class="fa-solid fa-square-poll-horizontal mr-2 text-emerald-400"></i>隨堂觀念挑戰賽</h3>
+      
+      <!-- 測驗卡片 -->
+      <div id="quiz-container" class="max-w-3xl mx-auto w-full bg-slate-900/80 backdrop-blur-md p-6 rounded-3xl border border-white/10 shadow-2xl relative min-h-[350px] flex flex-col justify-between">
+        
+        <!-- 進度條 -->
+        <div class="w-full bg-white/10 h-1.5 rounded-full overflow-hidden mb-4">
+          <div id="quiz-progress" class="bg-emerald-500 h-full transition-all duration-300" style="width: 20%;"></div>
+        </div>
+        
+        <div id="quiz-content" class="space-y-4">
+          <!-- 問題 -->
+          <h4 id="quiz-question" class="text-lg font-bold text-white leading-relaxed">問題載入中...</h4>
+          
+          <!-- 選項 -->
+          <div class="grid grid-cols-1 gap-3" id="quiz-options">
+            <!-- 選項按鈕會動態生成 -->
+          </div>
+        </div>
+        
+        <!-- 解析回饋 -->
+        <div id="quiz-feedback" class="mt-4 p-3 rounded-xl text-xs hidden animate-fade-in">
+          <span id="feedback-status" class="font-bold block text-sm"></span>
+          <p id="feedback-text" class="text-white/80 mt-1"></p>
+        </div>
+        
+        <!-- 下一題按鈕 -->
+        <div class="flex justify-end mt-4">
+          <button id="btn-next-quiz" onclick="nextQuiz()" class="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 rounded-xl text-xs font-bold shadow-lg shadow-emerald-500/20 transition-all hidden">
+            <span>下一題</span> <i class="fa-solid fa-arrow-right ml-1"></i>
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- 底部控制導覽列 -->
+  <footer class="w-full px-6 py-4 flex flex-col md:flex-row justify-between items-center bg-black/40 border-t border-white/10 backdrop-blur-sm z-10">
+    <div class="flex items-center space-x-2 text-xs text-white/60 mb-3 md:mb-0">
+      <kbd class="px-1.5 py-0.5 bg-white/10 rounded border border-white/20 text-[10px] shadow">←</kbd>
+      <kbd class="px-1.5 py-0.5 bg-white/10 rounded border border-white/20 text-[10px] shadow">→</kbd>
+      <span>方向鍵換頁 ｜ 滑鼠滾輪 ｜ 螢幕左右滑動</span>
+    </div>
+    
+    <!-- 頁碼切換控制 -->
+    <div class="flex items-center space-x-4">
+      <button onclick="prevSlide()" class="w-10 h-10 bg-white/10 hover:bg-white/20 active:scale-90 rounded-full flex items-center justify-center border border-white/10 transition-all">
+        <i class="fa-solid fa-chevron-left text-sm"></i>
+      </button>
+      
+      <!-- 進度指示器 -->
+      <span id="page-num" class="text-sm font-bold bg-white/10 px-4 py-1.5 rounded-full border border-white/10">1 / 13</span>
+      
+      <button onclick="nextSlide()" class="w-10 h-10 bg-white/10 hover:bg-white/20 active:scale-90 rounded-full flex items-center justify-center border border-white/10 transition-all">
+        <i class="fa-solid fa-chevron-right text-sm"></i>
+      </button>
+    </div>
+  </footer>
+
+  <!-- 浮動成功提示彈出框 (取代 alert) -->
+  <div id="toast" class="fixed top-20 right-6 z-50 bg-slate-900 border border-emerald-500/50 px-5 py-3 rounded-xl shadow-2xl translate-x-80 opacity-0 transition-all duration-300 pointer-events-none flex items-center space-x-3">
+    <i class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
+    <div>
+      <h6 id="toast-title" class="font-bold text-xs">成功提示</h6>
+      <p id="toast-desc" class="text-[10px] text-white/70"></p>
+    </div>
+  </div>
+
+  <script>
+    // 簡報核心變數
+    let currentSlide = 1;
+    const totalSlides = 13;
+    let isSoundOn = true;
+    let audioCtx = null;
+    let particlesCanvas = null;
+    let particlesCtx = null;
+    let particles = [];
+    
+    // 初始化
+    window.onload = function() {
+      // 1. 初始化粒子背景
+      initParticles();
+      
+      // 2. 初始化換頁事件
+      document.addEventListener('keydown', handleKeydown);
+      document.addEventListener('wheel', handleWheel, { passive: false });
+      initSwipe();
+      
+      // 3. 載入第一題測驗
+      loadQuizQuestion();
+    };
+
+    // --- 音效系統 (純 Web Audio API 實作，無需加載外部 MP3 檔案) ---
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+    }
+
+    function playBeep(freq, type, duration, volume = 0.1) {
+      if (!isSoundOn) return;
+      initAudio();
+      try {
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        
+        osc.frequency.value = freq;
+        osc.type = type;
+        gainNode.gain.setValueAtTime(volume, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+        
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {
+        console.warn('Audio play blocked or unsupported', e);
+      }
+    }
+
+    function toggleSound() {
+      isSoundOn = !isSoundOn;
+      const btn = document.getElementById('btn-sound');
+      const icon = document.getElementById('sound-icon');
+      if (isSoundOn) {
+        icon.className = 'fa-solid fa-volume-high text-emerald-400';
+        btn.querySelector('span').innerText = '音效開啟';
+        playBeep(600, 'sine', 0.1);
+      } else {
+        icon.className = 'fa-solid fa-volume-xmark text-white/50';
+        btn.querySelector('span').innerText = '音效關閉';
+      }
+    }
+
+    function playPageSound() {
+      playBeep(440, 'sine', 0.15, 0.08);
+    }
+    
+    function playCorrectSound() {
+      playBeep(523.25, 'sine', 0.1, 0.1); // C5
+      setTimeout(() => playBeep(659.25, 'sine', 0.1, 0.1), 80); // E5
+      setTimeout(() => playBeep(783.99, 'sine', 0.2, 0.1), 160); // G5
+    }
+
+    function playWrongSound() {
+      playBeep(220, 'sawtooth', 0.2, 0.15); // A3
+    }
+    
+    function playStepSound() {
+      playBeep(880, 'sine', 0.05, 0.05);
+    }
+
+    // --- 主題切換功能 ---
+    function changeTheme(themeName) {
+      document.body.className = `theme-transition text-white h-screen flex flex-col justify-between select-none bg-gradient-to-br from-[var(--bg-gradient-from)] to-[var(--bg-gradient-to)] ${themeName}`;
+      playBeep(800, 'sine', 0.1, 0.05);
+      showToast('主題切換成功', `已套用新主題風格`);
+    }
+
+    // --- 全方位換頁邏輯 ---
+    function updateSlideVisibility() {
+      for (let i = 1; i <= totalSlides; i++) {
+        const slide = document.getElementById(`slide-${i}`);
+        if (i === currentSlide) {
+          slide.classList.remove('hidden');
+          slide.className = "slide-container absolute w-full h-full flex flex-col justify-center px-4 slide-active";
+        } else {
+          slide.classList.add('hidden');
+        }
+      }
+      // 更新頁碼與進度條
+      document.getElementById('page-num').innerText = `${currentSlide} / ${totalSlides}`;
+    }
+
+    function nextSlide() {
+      if (currentSlide < totalSlides) {
+        currentSlide++;
+        playPageSound();
+        updateSlideVisibility();
+      } else {
+        showToast('完成簡報！', '您已到達簡報最後一頁，謝謝聆聽！');
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlide > 1) {
+        currentSlide--;
+        playPageSound();
+        updateSlideVisibility();
+      }
+    }
+
+    function goToSlide(num) {
+      if (num >= 1 && num <= totalSlides) {
+        currentSlide = num;
+        playPageSound();
+        updateSlideVisibility();
+      }
+    }
+
+    // 鍵盤導覽
+    function handleKeydown(e) {
+      if (e.key === 'ArrowRight' || e.key === 'Space') {
+        nextSlide();
+      } else if (e.key === 'ArrowLeft') {
+        prevSlide();
+      }
+    }
+
+    // 滑鼠滾輪導覽 (附帶安全防抖機制，避免極速翻頁)
+    let lastWheelTime = 0;
+    const wheelCooldown = 800; // 0.8秒冷卻時間，確保手感柔和舒適
+    function handleWheel(e) {
+      e.preventDefault(); // 防止網頁預設滾動
+      const now = Date.now();
+      if (now - lastWheelTime < wheelCooldown) return;
+      
+      if (e.deltaY > 20) {
+        nextSlide();
+        lastWheelTime = now;
+      } else if (e.deltaY < -20) {
+        prevSlide();
+        lastWheelTime = now;
+      }
+    }
+
+    // 手勢觸控滑動導覽 (Mobile Swipe)
+    let touchStartX = 0;
+    let touchEndX = 0;
+    function initSwipe() {
+      document.addEventListener('touchstart', e => {
+        touchStartX = e.changedTouches[0].screenX;
+      });
+      document.addEventListener('touchend', e => {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipe();
+      });
+    }
+    function handleSwipe() {
+      const threshold = 60; // 滑動距離門檻
+      if (touchStartX - touchEndX > threshold) {
+        nextSlide(); // 向左滑動 ➜ 下一頁
+      } else if (touchEndX - touchStartX > threshold) {
+        prevSlide(); // 向右滑動 ➜ 上一頁
+      }
+    }
+
+    // --- 自然背景粒子效果 ---
+    function initParticles() {
+      particlesCanvas = document.getElementById('bg-particles');
+      particlesCtx = particlesCanvas.getContext('2d');
+      resizeCanvas();
+      
+      window.addEventListener('resize', resizeCanvas);
+      
+      // 生成50個綠色漂浮粒子 (落葉、花粉感覺)
+      for (let i = 0; i < 40; i++) {
+        particles.push({
+          x: Math.random() * particlesCanvas.width,
+          y: Math.random() * particlesCanvas.height,
+          radius: Math.random() * 3 + 1,
+          color: `rgba(${Math.random() > 0.5 ? '16, 185, 129' : '251, 191, 36'}, ${Math.random() * 0.4 + 0.1})`,
+          speedX: Math.random() * 0.6 - 0.3,
+          speedY: Math.random() * 0.5 + 0.2, // 向下飄移
+          amplitude: Math.random() * 20,
+          frequency: Math.random() * 0.01
+        });
+      }
+      
+      animateParticles();
+    }
+
+    function resizeCanvas() {
+      particlesCanvas.width = window.innerWidth;
+      particlesCanvas.height = window.innerHeight;
+    }
+
+    function animateParticles() {
+      particlesCtx.clearRect(0, 0, particlesCanvas.width, particlesCanvas.height);
+      const time = Date.now();
+      
+      particles.forEach(p => {
+        // 橫向飄動用正弦函數模擬落葉搖擺
+        p.x += p.speedX + Math.sin(time * p.frequency) * 0.2;
+        p.y += p.speedY;
+        
+        if (p.y > particlesCanvas.height) {
+          p.y = -10;
+          p.x = Math.random() * particlesCanvas.width;
+        }
+        
+        particlesCtx.beginPath();
+        particlesCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        particlesCtx.fillStyle = p.color;
+        particlesCtx.fill();
+      });
+      
+      requestAnimationFrame(animateParticles);
+    }
+
+    // --- 自訂精美 Toast 提示 ---
+    function showToast(title, desc) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toast-title').innerText = title;
+      document.getElementById('toast-desc').innerText = desc;
+      
+      toast.classList.remove('opacity-0', 'translate-x-80');
+      toast.classList.add('opacity-100', 'translate-x-0');
+      
+      setTimeout(() => {
+        toast.classList.remove('opacity-100', 'translate-x-0');
+        toast.classList.add('opacity-0', 'translate-x-80');
+      }, 3000);
+    }
+
+    // --- Slide 4: 農業繁殖切換技術 ---
+    function switchTab(tabId) {
+      // 隱藏所有
+      const contents = document.querySelectorAll('.tab-pane');
+      contents.forEach(c => c.classList.add('hidden'));
+      
+      // 顯示目標
+      document.getElementById(tabId.replace('btn-', '')).classList.remove('hidden');
+      
+      // 切換按鈕狀態
+      const buttons = document.querySelectorAll('.tab-btn');
+      buttons.forEach(btn => {
+        btn.classList.remove('bg-emerald-500/20', 'text-emerald-400');
+        btn.classList.add('text-white/70');
+      });
+      
+      const activeBtn = document.getElementById(tabId);
+      activeBtn.classList.remove('text-white/70');
+      activeBtn.classList.add('bg-emerald-500/20', 'text-emerald-400');
+      
+      playBeep(450, 'sine', 0.1, 0.05);
+    }
+
+    // --- Slide 7: 花構造點擊互動 ---
+    function showFlowerPart(id, title, desc) {
+      playBeep(700, 'sine', 0.08, 0.06);
+      
+      const box = document.getElementById('flower-info-box');
+      const boxTitle = document.getElementById('flower-info-title');
+      const boxDesc = document.getElementById('flower-info-desc');
+      
+      boxTitle.innerText = title;
+      boxDesc.innerText = desc;
+      
+      box.classList.remove('hidden');
+    }
+
+    // --- Slide 10: 雙重受精模擬動態動畫 ---
+    let fertilizeInterval = null;
+    function triggerFertilization() {
+      const btn = document.getElementById('btn-fertilize');
+      btn.disabled = true;
+      btn.classList.add('opacity-50');
+      
+      const s1 = document.getElementById('sperm-1');
+      const s2 = document.getElementById('sperm-2');
+      
+      s1.setAttribute('opacity', '1');
+      s2.setAttribute('opacity', '1');
+      
+      let cy1 = 290;
+      let cy2 = 298;
+      
+      playBeep(300, 'sine', 0.5, 0.1);
+      
+      fertilizeInterval = setInterval(() => {
+        // 第一顆精核前進，與卵細胞(200, 215)結合
+        if (cy1 > 215) {
+          cy1 -= 3;
+          s1.setAttribute('cy', cy1);
+        } else if (cy1 !== -999) {
+          // 抵達卵細胞，產生綠色粒子爆炸
+          cy1 = -999; 
+          s1.setAttribute('opacity', '0');
+          triggerBlast('blast-egg', 'green');
+        }
+        
+        // 第二顆精核緊跟，往上與極核(200, 140)結合
+        if (cy1 === -999 && cy2 > 140) {
+          cy2 -= 4;
+          s2.setAttribute('cy', cy2);
+        } else if (cy1 === -999 && cy2 !== -999) {
+          // 抵達中央細胞，產生黃色粒子爆炸
+          cy2 = -999;
+          s2.setAttribute('opacity', '0');
+          triggerBlast('blast-center', 'yellow');
+          clearInterval(fertilizeInterval);
+          
+          // 受精完成，秀大招牌
+          setTimeout(() => {
+            document.getElementById('success-banner').classList.remove('opacity-0', 'pointer-events-none');
+            document.getElementById('success-banner').classList.add('opacity-100');
+          }, 800);
+        }
+      }, 30);
+    }
+
+    function triggerBlast(elementId, type) {
+      const blast = document.getElementById(elementId);
+      blast.classList.remove('scale-0', 'opacity-0');
+      blast.classList.add('scale-150', 'opacity-80');
+      
+      if (type === 'green') {
+        playBeep(523, 'sine', 0.3, 0.1); // 亮麗音效
+      } else {
+        playCorrectSound(); // 終極成功大和弦
+      }
+      
+      setTimeout(() => {
+        blast.classList.remove('scale-150', 'opacity-80');
+        blast.classList.add('scale-0', 'opacity-0');
+      }, 500);
+    }
+
+    function resetFertilization() {
+      document.getElementById('success-banner').classList.remove('opacity-100');
+      document.getElementById('success-banner').classList.add('opacity-0', 'pointer-events-none');
+      
+      const s1 = document.getElementById('sperm-1');
+      const s2 = document.getElementById('sperm-2');
+      s1.setAttribute('cy', '290');
+      s2.setAttribute('cy', '298');
+      s1.setAttribute('opacity', '0');
+      s2.setAttribute('opacity', '0');
+      
+      const btn = document.getElementById('btn-fertilize');
+      btn.disabled = false;
+      btn.classList.remove('opacity-50');
+    }
+
+    // --- Slide 13: 互動挑戰賽題目資料庫 ---
+    const quizData = [
+      {
+        question: "1. 當花粉管順利抵達雌蕊的胚囊時，它會釋放出幾個精細胞，且各別功能為何？",
+        options: [
+          "A. 1個精細胞與卵結合發育為胚乳",
+          "B. 2個精細胞，一個與卵結合成合子，另一個與兩個極核結合發育成胚乳",
+          "C. 3個精細胞，各別發育為種皮、胚芽與胚根",
+          "D. 2個精細胞，全部與同一個卵結合以提供雙倍營養"
+        ],
+        correct: 1,
+        analysis: "正確答案是 B。被子植物進行獨特的【雙重受精】。一個精細胞 (n) 與卵 (n) 結合成合子 (2n)；另一個精細胞 (n) 與兩個極核 (n+n) 結合成胚乳母細胞 (3n) 發育成胚乳。"
+      },
+      {
+        question: "2. 在進行植物組織培養時，若想要刺激傷口處的『癒傷組織』開始萌發出美麗的『新綠芽』，應該要調高培養基中的哪一種植物激素比例？",
+        options: [
+          "A. 吉貝素 (GA)",
+          "B. 細胞分裂素 (Cytokinin)",
+          "C. 生長素 (Auxin)",
+          "D. 脫落酸 (ABA)"
+        ],
+        correct: 1,
+        analysis: "正確答案是 B。組織培養的黃金激素比：高比例的『細胞分裂素』能有效誘導分化出新芽；若想促進不定根生長，則需調高『生長素』比例。"
+      },
+      {
+        question: "3. 台灣知名的多汁水果「草莓」，我們口中大口咬下、酸甜紅透、長著芝麻小點的『果肉部位』，在植物學上是由花的哪一部分發育而來的？",
+        options: [
+          "A. 胚珠",
+          "B. 子房壁",
+          "C. 膨大的花托",
+          "D. 雄蕊特化"
+        ],
+        correct: 2,
+        analysis: "正確答案是 C。草莓是著名的「假果（聚合果）」。我們吃的部分並非子房發育成的真果皮，而是膨大的【花托】。上面的芝麻狀小點才是真正的「瘦果」（由多個子房發育而來）。"
+      },
+      {
+        question: "4. 下列哪一種植物的「種子構造」中，其胚乳會在發育中被完全吸收，而將黃金養分改儲存在發達的『子葉』中，屬於「非胚乳型種子」？",
+        options: [
+          "A. 玉米",
+          "B. 水稻",
+          "C. 菜豆",
+          "D. 洋蔥"
+        ],
+        correct: 2,
+        analysis: "正確答案是 C。菜豆、大豆、花生等雙子葉植物，在成熟時胚乳退化，改將養分大量儲存於肥厚富含蛋白質與脂質的子葉中，屬於「非胚乳型種子」。"
+      },
+      {
+        question: "5. 在植物生命週期的「世代交替」中，下列哪一個階段代表了『單倍體 (n)』世代的起點與終點？",
+        options: [
+          "A. 起點為受精卵，終點為種子",
+          "B. 起點為孢子，終點為配子體所產生的配子",
+          "C. 起點為合子，終點為大樹上的花粉",
+          "D. 起點為原絲體，終點為大孢子母細胞"
+        ],
+        correct: 1,
+        analysis: "正確答案是 B。單倍體世代 (n) 又稱配子體世代。起點為孢子體經減數分裂產生的單套【孢子 (n)】，經有絲分裂成為配子體，最後終點為配子體產生的【配子 (n)】（精、卵細胞）。"
+      }
+    ];
+
+    let currentQuizIndex = 0;
+    let userScore = 0;
+    let quizSelected = false;
+
+    function loadQuizQuestion() {
+      quizSelected = false;
+      document.getElementById('quiz-feedback').classList.add('hidden');
+      document.getElementById('btn-next-quiz').classList.add('hidden');
+      
+      const q = quizData[currentQuizIndex];
+      
+      // 更新進度條
+      const progressPercent = ((currentQuizIndex + 1) / quizData.length) * 100;
+      document.getElementById('quiz-progress').style.width = `${progressPercent}%`;
+      
+      document.getElementById('quiz-question').innerText = q.question;
+      
+      const optionsDiv = document.getElementById('quiz-options');
+      optionsDiv.innerHTML = '';
+      
+      q.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = "w-full text-left p-3 bg-white/5 hover:bg-white/10 active:scale-98 rounded-xl border border-white/10 text-xs md:text-sm transition-all flex items-center space-x-3";
+        btn.onclick = () => selectQuizOption(idx);
+        btn.innerHTML = `<span class="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center font-bold text-xs">${idx + 1}</span> <span>${opt}</span>`;
+        optionsDiv.appendChild(btn);
+      });
+    }
+
+    function selectQuizOption(selectedIndex) {
+      if (quizSelected) return; // 避免重複作答
+      quizSelected = true;
+      
+      const q = quizData[currentQuizIndex];
+      const feedback = document.getElementById('quiz-feedback');
+      const status = document.getElementById('feedback-status');
+      const text = document.getElementById('feedback-text');
+      const optionsButtons = document.getElementById('quiz-options').children;
+      
+      // 凍結其他選項，並高亮正確答案
+      for (let i = 0; i < optionsButtons.length; i++) {
+        optionsButtons[i].disabled = true;
+        if (i === q.correct) {
+          optionsButtons[i].className = "w-full text-left p-3 bg-emerald-500/20 rounded-xl border-2 border-emerald-500 text-xs md:text-sm transition-all flex items-center space-x-3";
+        } else if (i === selectedIndex) {
+          optionsButtons[i].className = "w-full text-left p-3 bg-red-500/20 rounded-xl border-2 border-red-500 text-xs md:text-sm transition-all flex items-center space-x-3";
+        } else {
+          optionsButtons[i].className = "w-full text-left p-3 bg-white/5 rounded-xl border border-white/5 text-xs md:text-sm transition-all flex items-center space-x-3 opacity-40";
+        }
+      }
+      
+      // 答對或答錯判定
+      if (selectedIndex === q.correct) {
+        userScore += 20;
+        status.innerText = "🎉 答對了！恭喜大師！";
+        status.className = "font-bold block text-sm text-emerald-400";
+        feedback.className = "mt-4 p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-xs animate-fade-in";
+        playCorrectSound();
+      } else {
+        status.innerText = "❌ 答錯囉，差一點點就對了！";
+        status.className = "font-bold block text-sm text-red-400";
+        feedback.className = "mt-4 p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-xs animate-fade-in";
+        playWrongSound();
+      }
+      
+      text.innerText = q.analysis;
+      feedback.classList.remove('hidden');
+      document.getElementById('btn-next-quiz').classList.remove('hidden');
+    }
+
+    function nextQuiz() {
+      if (currentQuizIndex < quizData.length - 1) {
+        currentQuizIndex++;
+        loadQuizQuestion();
+      } else {
+        // 完成挑戰
+        showQuizResults();
+      }
+    }
+
+    function showQuizResults() {
+      const container = document.getElementById('quiz-container');
+      
+      let title = "";
+      let emoji = "";
+      if (userScore >= 100) {
+        title = "終極綠手指神人 🏅";
+        emoji = "🥇";
+      } else if (userScore >= 80) {
+        title = "園藝界生物學家 🌿";
+        emoji = "🥈";
+      } else {
+        title = "植物世界實習生 🌸";
+        emoji = "🥉";
+      }
+      
+      container.innerHTML = `
+        <div class="text-center py-6 space-y-4">
+          <span class="text-6xl block animate-bounce">${emoji}</span>
+          <h4 class="text-2xl font-black text-emerald-400">挑戰挑戰結束！</h4>
+          <p class="text-base">您的最終得分為：</p>
+          <div class="text-5xl font-black text-yellow-400 font-mono">${userScore} 分</div>
+          <p class="text-xs text-white/70 max-w-sm mx-auto p-2 bg-white/5 rounded border border-white/10">
+            榮獲稱號：<strong>${title}</strong><br>
+            您對被子植物的營養繁殖、世代交替與雙重受精等機制有很好的掌握！
+          </p>
+          <button onclick="restartQuiz()" class="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 rounded-xl text-xs font-bold shadow-lg shadow-emerald-500/20 transition-all">
+            重新挑戰
+          </button>
+        </div>
+      `;
+      playCorrectSound();
+    }
+
+    function restartQuiz() {
+      currentQuizIndex = 0;
+      userScore = 0;
+      const container = document.getElementById('quiz-container');
+      container.innerHTML = `
+        <!-- 進度條 -->
+        <div class="w-full bg-white/10 h-1.5 rounded-full overflow-hidden mb-4">
+          <div id="quiz-progress" class="bg-emerald-500 h-full transition-all duration-300" style="width: 20%;"></div>
+        </div>
+        
+        <div id="quiz-content" class="space-y-4">
+          <!-- 問題 -->
+          <h4 id="quiz-question" class="text-lg font-bold text-white leading-relaxed">問題載入中...</h4>
+          
+          <!-- 選項 -->
+          <div class="grid grid-cols-1 gap-3" id="quiz-options"></div>
+        </div>
+        
+        <!-- 解析回饋 -->
+        <div id="quiz-feedback" class="mt-4 p-3 rounded-xl text-xs hidden animate-fade-in">
+          <span id="feedback-status" class="font-bold block text-sm"></span>
+          <p id="feedback-text" class="text-white/80 mt-1"></p>
+        </div>
+        
+        <!-- 下一題按鈕 -->
+        <div class="flex justify-end mt-4">
+          <button id="btn-next-quiz" onclick="nextQuiz()" class="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 rounded-xl text-xs font-bold shadow-lg shadow-emerald-500/20 transition-all hidden">
+            <span>下一題</span> <i class="fa-solid fa-arrow-right ml-1"></i>
+          </button>
+        </div>
+      `;
+      loadQuizQuestion();
+    }
+  </script>
 </body>
-
 </html>
-
-
